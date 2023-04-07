@@ -53,7 +53,7 @@ canvas {
         </div>
         <button id="submitBtn">Submit</button>
         <div class="info">
-            <p>Time Remaining: <span id="timer">20</span></p>
+            <p>Time Remaining: <span id="timer">30</span></p>
             <p>Score: <span id="score">0</span></p>
         </div>
     </div>
@@ -73,14 +73,16 @@ const submitBtn = document.getElementById('submitBtn');
 const timerElement = document.getElementById('timer');
 const scoreElement = document.getElementById('score');
 
+
 let targetColor = generateRandomColor();
 let playerColor = { r: 128, g: 128, b: 128 };
-let timeRemaining = 20;
+let timeRemaining = 30;
 let score = 0;
 let timer;
 
+let hasSliderChanged = false; 
+
 drawShape(targetCtx, targetColor);
-updatePlayerColor();
 
 redSlider.addEventListener('input', updatePlayerColor);
 greenSlider.addEventListener('input', updatePlayerColor);
@@ -108,8 +110,8 @@ function updatePlayerColor() {
     playerColor.g = greenSlider.value;
     playerColor.b = blueSlider.value;
     drawShape(playerCtx, playerColor);
+    hasSliderChanged = true;
 }
-
 function colorDifference(color1, color2) {
     return Math.sqrt(
         Math.pow(color1.r - color2.r, 2) +
@@ -118,15 +120,6 @@ function colorDifference(color1, color2) {
     );
 }
 
-function submitColor() {
-    const difference = colorDifference(targetColor, playerColor);
-    const points = Math.max(0, Math.round(255 - difference));
-    score += points;
-    scoreElement.textContent = score;
-
-    targetColor = generateRandomColor();
-    drawShape(targetCtx, targetColor);
-}
 
 function countdown() {
     timeRemaining--;
@@ -136,6 +129,19 @@ function countdown() {
         alert('Time\'s up! Your final score is: ' + score);
         resetGame();
     }
+}
+
+function submitColor() {
+    if (hasSliderChanged) {
+        const difference = colorDifference(targetColor, playerColor);
+        const points = Math.max(0, Math.round(255 - difference));
+        score += points;
+        scoreElement.textContent = score;
+    }
+
+    targetColor = generateRandomColor();
+    drawShape(targetCtx, targetColor);
+    hasSliderChanged = false;
 }
 
 function resetGame() {
