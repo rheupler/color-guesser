@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Match</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 1rem;
+}
+
+canvas {
+    margin-bottom: 1rem;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.info {
+    text-align: center;
+}
+
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="targetCanvas" width="300" height="300"></canvas>
+        <canvas id="playerCanvas" width="300" height="300"></canvas>
+        <div class="controls">
+            <label>R: <input id="redSlider" type="range" min="0" max="255" value="128"></label>
+            <label>G: <input id="greenSlider" type="range" min="0" max="255" value="128"></label>
+            <label>B: <input id="blueSlider" type="range" min="0" max="255" value="128"></label>
+        </div>
+        <button id="submitBtn">Submit</button>
+        <div class="info">
+            <p>Time Remaining: <span id="timer">20</span></p>
+            <p>Score: <span id="score">0</span></p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+const targetCanvas = document.getElementById('targetCanvas');
+const targetCtx = targetCanvas.getContext('2d');
+const playerCanvas = document.getElementById('playerCanvas');
+const playerCtx = playerCanvas.getContext('2d');
+
+const redSlider = document.getElementById('redSlider');
+const greenSlider = document.getElementById('greenSlider');
+const blueSlider = document.getElementById('blueSlider');
+
+const submitBtn = document.getElementById('submitBtn');
+
+const timerElement = document.getElementById('timer');
+const scoreElement = document.getElementById('score');
+
+let targetColor = generateRandomColor();
+let playerColor = { r: 128, g: 128, b: 128 };
+let timeRemaining = 20;
+let score = 0;
+let timer;
+
+drawShape(targetCtx, targetColor);
+updatePlayerColor();
+
+redSlider.addEventListener('input', updatePlayerColor);
+greenSlider.addEventListener('input', updatePlayerColor);
+blueSlider.addEventListener('input', updatePlayerColor);
+submitBtn.addEventListener('click', submitColor);
+
+function generateRandomColor() {
+    return {
+        r: Math.floor(Math.random() * 256),
+        g: Math.floor(Math.random() * 256),
+        b: Math.floor(Math.random() * 256)
+    };
+}
+
+function drawShape(ctx, color) {
+    ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+    ctx.beginPath();
+    ctx.arc(targetCanvas.width / 2, targetCanvas.height / 2, 100, 0, 2 * Math.PI);
+    ctx.fillStyle = `rgb(${color.r},${color.g},${color.b})`;
+    ctx.fill();
+}
+
+function updatePlayerColor() {
+    playerColor.r = redSlider.value;
+    playerColor.g = greenSlider.value;
+    playerColor.b = blueSlider.value;
+    drawShape(playerCtx, playerColor);
+}
+
+function colorDifference(color1, color2) {
+    return Math.sqrt(
+        Math.pow(color1.r - color2.r, 2) +
+        Math.pow(color1.g - color2.g, 2) +
+        Math.pow(color1.b - color2.b, 2)
+    );
+}
+
+function submitColor() {
+    const difference = colorDifference(targetColor, playerColor);
+    const points = Math.max(0, Math.round(255 - difference));
+    score += points;
+    scoreElement.textContent = score;
+
+    targetColor = generateRandomColor();
+    drawShape(targetCtx, targetColor);
+}
+
+function countdown() {
+    timeRemaining--;
+    timerElement.textContent = timeRemaining;
+    if (timeRemaining <= 0) {
+        clearInterval(timer);
+        alert('Time\'s up! Your final score is: ' + score);
+        resetGame();
+    }
+}
+
+function resetGame() {
+    score = 0;
+    scoreElement.textContent = score;
+    timeRemaining = 10;
+    timerElement.textContent = timeRemaining;
+    timer = setInterval(countdown, 1000);
+}
+
+timer = setInterval(countdown, 1000);
+
+    </script>
+</body>
+</html>
